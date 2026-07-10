@@ -372,12 +372,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // =========================================================================
-// --- LÓGICA PARA EL MENÚ FIJO A PRUEBA DE RECARGAS (NO TOCAR) ---
+// --- LÓGICA PARA EL MENÚ FIJO A PRUEBA DE SALTOS ---
 // =========================================================================
 const nav = document.getElementById('site-navigation');
-const ticker = document.querySelector('.news-ticker');
-const topBar = document.querySelector('.top-bar');
 const headerFondo = document.querySelector('.header-background-wrapper');
+const topBar = document.querySelector('.top-bar'); // Por si agregas una top-bar después
+
+// 1. Creamos el "espacio fantasma"
+const menuFantasma = document.createElement('div');
+menuFantasma.style.display = 'none'; // Invisible al inicio
+// 2. Lo insertamos en el HTML justo antes del menú de navegación
+nav.parentNode.insertBefore(menuFantasma, nav);
 
 let distanciaMenu = 0;
 
@@ -393,11 +398,30 @@ window.addEventListener('resize', calcularDistancia);
 
 window.addEventListener('scroll', () => {
     if (distanciaMenu === 0) return;
+    
     if (window.scrollY >= distanciaMenu) {
-        nav.classList.add('menu-fijo');
-        if (ticker) ticker.style.marginTop = (nav.offsetHeight + 15) + 'px';
+        // Cuando hacemos scroll hacia abajo y pasamos el fondo
+        if (!nav.classList.contains('menu-fijo')) {
+            // Le damos al fantasma la altura exacta del menú para que nada salte
+            menuFantasma.style.height = nav.offsetHeight + 'px';
+            
+            // Copiamos automáticamente cualquier margen que tenga el menú en tu CSS
+            menuFantasma.style.marginBottom = window.getComputedStyle(nav).marginBottom;
+            
+            // Mostramos el fantasma para rellenar el hueco
+            menuFantasma.style.display = 'block'; 
+            
+            // Hacemos el menú flotante
+            nav.classList.add('menu-fijo');
+        }
     } else {
-        nav.classList.remove('menu-fijo');
-        if (ticker) ticker.style.marginTop = '15px';
+        // Cuando regresamos hasta arriba de la página
+        if (nav.classList.contains('menu-fijo')) {
+            // Quitamos el menú flotante
+            nav.classList.remove('menu-fijo');
+            
+            // Escondemos el fantasma de nuevo
+            menuFantasma.style.display = 'none'; 
+        }
     }
 });
