@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | Punto Estado de México</title>
+    <link rel="icon" type="image/png" href="img/icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary-color: #F75D04;
+            --bg-color: #f4f6f8;
+            --white: #ffffff;
+            --text-color: #333333;
+            --border-color: #dfe3e8;
+            --font-body: 'Roboto', sans-serif;
+            --font-heading: 'Oswald', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .admin-wrapper {
+            max-width: 825px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .admin-header h1 {
+            font-family: var(--font-heading);
+            text-transform: uppercase;
+            color: #222;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .admin-header span {
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #444;
+            font-size: 16px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.6;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .file-drop-area {
+            border: 2px dashed #b5bcc5;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            background-color: #fafbfc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-drop-area:hover {
+            border-color: var(--primary-color);
+            background-color: #fff9f5;
+        }
+
+        .file-drop-area p {
+            margin: 0;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 16px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: var(--font-heading);
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #d84f00;
+        }
+        
+        .btn-submit:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            display: none;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-wrapper">
+        <div class="admin-header">
+            <h1>Publicar <span>Nueva Noticia</span></h1>
+            <p style="color: #666; font-size: 14px; margin-top: 10px;">El primer párrafo será el título. Usa <strong>Por:</strong> o <strong>Por :</strong> para el autor y <strong>**</strong> para el subtítulo.</p>
+        </div>
+        
+        <div id="status-message" class="status-message"></div>
+        
+        <form id="news-form">
+            
+            <div class="form-group">
+                <label>1. Categorías (Puedes seleccionar varias)</label>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; background: #fafbfc; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px;">
+                    <label style="font-weight: 500; cursor: pointer;"><input type="checkbox" value="política" class="category-cb"> Política</label>
+                    <label style="font-weight: 500; cursor: pointer;"><input type="checkbox" value="cultura" class="category-cb"> Cultura</label>
+                    <label style="font-weight: 500; cursor: pointer;"><input type="checkbox" value="aula" class="category-cb"> Aula</label>
+                    <label style="font-weight: 500; cursor: pointer;"><input type="checkbox" value="municipios" class="category-cb"> Municipios</label>
+                    <label style="font-weight: 500; cursor: pointer;"><input type="checkbox" value="nacional" class="category-cb"> Nacional</label>
+                    <label style="font-weight: 500; cursor: pointer;"><input type="checkbox" value="EdoMex" class="category-cb"> EdoMex</label>
+                    <label style="font-weight: 500; cursor: pointer;"><input type="checkbox" value="lo más leído" class="category-cb"> lo más leído</label>
+                    <label style="font-weight: 500; cursor: pointer;"><input type="checkbox" value="internacional" class="category-cb"> Internacional</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>2. Fotografía de Portada</label>
+                <div class="file-drop-area" id="drop-area">
+                    <p>📸 Haz clic aquí para seleccionar la imagen</p>
+                    <input type="file" id="post-image" accept="image/*" style="display: none;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="post-content">3. Contenido Completo de la Noticia</label>
+                <textarea id="post-content" rows="15" placeholder="Pega todo el texto de la noticia aquí..." required></textarea>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-submit">Publicar Artículo</button>
+        </form>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://yeigwlusrivrdbkjrnpp.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaWd3bHVzcml2cmRia2pybnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyODM3NjQsImV4cCI6MjA5ODg1OTc2NH0.M-e480U5iuyH1FctwZtdiTIKD5HMklxu10LXINx2r6U'; 
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('post-image');
+        const newsForm = document.getElementById('news-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusMessage = document.getElementById('status-message');
+
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                dropArea.innerHTML = `<p style="color: #F75D04; font-weight: bold;">✔️ Imagen lista: ${e.target.files[0].name}</p>`;
+            }
+        });
+
+        function showMessage(text, isError = false) {
+            statusMessage.style.display = 'block';
+            statusMessage.textContent = text;
+            statusMessage.className = isError ? 'status-message status-error' : 'status-message status-success';
+        }
+
+        newsForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            
+            statusMessage.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Procesando y Publicando...';
+            
+            // 1. Validar Categorías
+            const checkedBoxes = document.querySelectorAll('.category-cb:checked');
+            const categoryArray = Array.from(checkedBoxes).map(cb => cb.value);
+            if (categoryArray.length === 0) {
+                showMessage('Por favor, selecciona al menos una categoría.', true);
+                resetButton();
+                return;
+            }
+            const category = categoryArray.join(', ');
+
+            // 2. Validar Imagen
+            const file = fileInput.files[0];
+            if (!file) {
+                showMessage('Por favor, selecciona una imagen de portada.', true);
+                resetButton();
+                return;
+            }
+
+            // ====================================================
+            // 3. LA MAGIA DEL PARSEO (SEPARAR EL TEXTO PEGADO)
+            // ====================================================
+            const rawText = document.getElementById('post-content').value;
+            
+            // Dividimos todo el texto por saltos de línea (Enters)
+            // Y eliminamos los párrafos que estén completamente vacíos
+            const parrafos = rawText.split(/\n+/).map(p => p.trim()).filter(p => p.length > 0);
+
+            if (parrafos.length === 0) {
+                showMessage('El cuerpo de la noticia no puede estar vacío.', true);
+                resetButton();
+                return;
+            }
+
+            // El primer párrafo SIEMPRE será el título
+            const tituloFinal = parrafos[0];
+            
+            let autorFinal = null;
+            let subtituloFinal = null;
+            let cuerpoArray = [];
+
+            // Empezamos a revisar a partir del SEGUNDO párrafo (índice 1)
+            for (let i = 1; i < parrafos.length; i++) {
+                let p = parrafos[i];
+                let pLower = p.toLowerCase(); // Convertimos a minúsculas solo para evaluar
+
+                // Detectar si es el AUTOR
+                if (pLower.startsWith('por:') || pLower.startsWith('por :')) {
+                    autorFinal = p; // Guardamos el autor tal cual lo escribió
+                } 
+                // Detectar si es el SUBTÍTULO
+                else if (p.startsWith('**')) {
+                    // Guardamos el subtítulo, pero le quitamos los "**" para que quede limpio en base de datos
+                    subtituloFinal = p.substring(2).trim(); 
+                } 
+                // Si no es ninguno de los dos, entonces es texto de la noticia normal
+                else {
+                    cuerpoArray.push(p);
+                }
+            }
+
+            // Volvemos a unir todos los párrafos de la noticia respetando sus saltos de línea
+            const cuerpoFinal = cuerpoArray.join('\n\n');
+
+            // ====================================================
+
+            try {
+                // Subir imagen
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+                
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('imagenes') 
+                    .upload(fileName, file);
+
+                if (uploadError) throw new Error('Error al subir la imagen: ' + uploadError.message);
+
+                const { data: { publicUrl } } = supabaseClient.storage
+                    .from('imagenes')
+                    .getPublicUrl(fileName);
+
+                // Insertar en Base de Datos
+                const { data: insertData, error: insertError } = await supabaseClient
+                    .from('noticias')
+                    .insert([
+                        {
+                            titulo: tituloFinal,
+                            subtitulo: subtituloFinal,
+                            autor: autorFinal, // NUEVA COLUMNA
+                            categoria: category,
+                            cuerpo: cuerpoFinal,
+                            imagen_url: publicUrl 
+                        }
+                    ])
+                    .select(); 
+
+                if (insertError) throw new Error('Error al guardar en la BD: ' + insertError.message);
+
+                // Redireccionar al artículo
+                if (insertData && insertData.length > 0) {
+                    submitBtn.textContent = '¡Listo! Redirigiendo...'; 
+                    window.location.href = `articulo.html?id=${insertData[0].id}`;
+                }
+
+            } catch (error) {
+                console.error(error);
+                showMessage(error.message, true);
+                resetButton();
+            } 
+        });
+
+        function resetButton() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Artículo';
+        }
+    </script>
+</body>
+</html>

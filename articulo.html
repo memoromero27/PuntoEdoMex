@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noticia | Punto Estado de México</title>
+    <link rel="icon" type="image/png" href="img/icon.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* ESTILOS EXCLUSIVOS DE LA NOTICIA (Caja Blanca, Textos, Botones) */
+        body {
+            /* Mantenemos un fondo sutil detrás de la nota */
+            background-color: #f4f6f8; 
+        }
+
+        .contenedor-noticia {
+            max-width: 800px;
+            width: 100%;
+            margin: 30px auto 60px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden; 
+            box-sizing: border-box;
+        }
+
+        .portada-noticia {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .contenido-texto {
+            padding: 40px 30px;
+        }
+
+        .titulo-noticia {
+            font-family: 'Oswald', sans-serif;
+            color: #1a1a1a;
+            font-size: 40px;
+            line-height: 1.2;
+            margin: 0 0 15px 0;
+        }
+
+        .subtitulo-noticia {
+            font-family: 'Roboto', sans-serif;
+            font-style: italic; 
+            color: #555;
+            font-size: 22px;
+            margin: 0 0 15px 0;
+            font-weight: 400;
+        }
+
+        .autor-noticia {
+            font-family: 'Roboto', sans-serif;
+            color: #cc4d00; 
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0 0 25px 0;
+            text-transform: uppercase;
+        }
+
+        .cuerpo-noticia {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            font-size: 19px;
+            white-space: pre-wrap; /* Mantiene los "Enters" intactos */
+        }
+
+        .contenedor-botones {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; 
+            align-items: center;
+        }
+
+        .btn-accion {
+            display: block;
+            background-color: #F75D04;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Roboto', sans-serif;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+
+        .btn-accion:hover {
+            background-color: #d64d03;
+        }
+        
+        /* Ajustes Móviles de la Nota */
+        @media (max-width: 768px) {
+            .titulo-noticia { font-size: 30px; }
+            .subtitulo-noticia { font-size: 19px; }
+            .contenido-texto { padding: 25px 20px; }
+            .contenedor-noticia { margin: 20px auto; border-radius: 0;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-background-wrapper">
+        <div class="header-main container">
+            <div class="site-branding">
+                <a href="index.html">
+                    <img src="img/Punto 1.png" alt="Logotipo Punto Estado de México" class="site-logo">
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <nav id="site-navigation" class="main-navigation">
+        <div class="container">
+            <div class="menu-toggle" id="mobile-menu-btn">☰ Menú</div>
+            <ul class="nav-menu" id="primary-menu">
+                <li class="active"><a href="index.html">Portada</a></li>
+                <li><a href="index.html">Política</a></li>
+                <li><a href="index.html">Cultura</a></li>
+                
+                <li class="has-submenu">
+                    <a href="index.html">EdoMex ▾</a>
+                    <ul class="submenu">
+                        <li><a href="index.html">Universidad</a></li>
+                        <li><a href="index.html">Aula</a></li>
+                        <li><a href="index.html">Municipios</a></li>
+                    </ul>
+                </li>
+                
+                <li><a href="index.html">Nacional</a></li>
+                <li><a href="index.html">Internacional</a></li>
+                <li><a href="index.html">Hoy</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="contenedor-noticia">
+        <div id="noticia-completa">
+            <h3 style="text-align: center; color: #555; padding: 50px 0;">
+                Cargando la noticia...
+            </h3>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const contenedor = document.getElementById('noticia-completa');
+            
+            try {
+                // Llaves de tu base de datos Supabase
+                const supabaseUrl = 'https://yeigwlusrivrdbkjrnpp.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaWd3bHVzcml2cmRia2pybnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyODM3NjQsImV4cCI6MjA5ODg1OTc2NH0.M-e480U5iuyH1FctwZtdiTIKD5HMklxu10LXINx2r6U';
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+                const parametrosURL = new URLSearchParams(window.location.search);
+                const noticiaId = parametrosURL.get('id');
+
+                if (!noticiaId) {
+                    contenedor.innerHTML = '<h2 style="color:red; text-align:center; padding: 40px;">Error: No se encontró la noticia.</h2>';
+                    return;
+                }
+
+                const { data: noticia, error } = await supabase
+                    .from('noticias') 
+                    .select('*')
+                    .eq('id', noticiaId)
+                    .single();
+
+                if (error) throw error;
+
+                // Armamos el HTML de la nota
+                contenedor.innerHTML = `
+                    <img src="${noticia.imagen_url}" alt="Imagen de la noticia" class="portada-noticia">
+                    
+                    <div class="contenido-texto">
+                        <h1 class="titulo-noticia">${noticia.titulo}</h1>
+                        
+                        ${noticia.subtitulo ? `<h2 class="subtitulo-noticia">${noticia.subtitulo}</h2>` : ''}
+                        ${noticia.autor ? `<div class="autor-noticia">${noticia.autor}</div>` : ''}
+                        
+                        <div class="cuerpo-noticia">${noticia.cuerpo}</div>
+
+                        <div class="contenedor-botones">
+                            <button id="btn-copiar" class="btn-accion">🔗 Copiar enlace de la noticia</button>
+                            <a href="index.html" class="btn-accion">⬅ Volver atrás</a>
+                        </div>
+                    </div>
+                `;
+
+                // Le damos vida al botón de copiar enlace
+                const btnCopiar = document.getElementById('btn-copiar');
+                btnCopiar.addEventListener('click', () => {
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        btnCopiar.textContent = '✅ ¡Enlace copiado!';
+                        btnCopiar.style.backgroundColor = '#28a745'; 
+                        
+                        setTimeout(() => {
+                            btnCopiar.textContent = '🔗 Copiar enlace de la noticia';
+                            btnCopiar.style.backgroundColor = '#F75D04';
+                        }, 3000);
+                    }).catch(err => {
+                        console.error('Error al copiar: ', err);
+                        alert('No se pudo copiar el enlace.');
+                    });
+                });
+
+            } catch (error) {
+                console.error("Fallo:", error);
+                contenedor.innerHTML = '<h2 style="color:red; text-align:center; padding: 40px;">Error al cargar la noticia.</h2>';
+            }
+        });
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
