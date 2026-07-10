@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noticia | Punto Estado de México</title>
+    <link rel="icon" type="image/png" href="img/icon.png">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* 1. LA CINTA SUPERIOR FIJA CON EFECTO BLUR */
+        .cinta-superior {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 5%;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .cinta-logo {
+            max-height: 45px;
+            width: auto;
+        }
+
+        .boton-volver {
+            background-color: #F75D04;
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-family: 'Roboto', sans-serif;
+            font-size: 15px;
+            transition: background-color 0.3s;
+        }
+
+        .boton-volver:hover {
+            background-color: #d64d03;
+            color: #ffffff;
+        }
+
+        /* 2. LA CAJA ESTÁNDAR */
+        .contenedor-noticia {
+            max-width: 800px;
+            width: 100%;
+            margin: 100px auto 50px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        .contenedor-noticia img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: #eee;
+        }
+
+        .contenedor-noticia h1, 
+        .contenedor-noticia p, 
+        .contenedor-noticia div {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        /* Estilo para el subtítulo */
+        .subtitulo-estilo {
+            font-family: 'Roboto', sans-serif;
+            font-size: 20px;
+            color: #666;
+            margin-top: 15px;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        /* Estilos para el botón de copiar enlace */
+        .btn-copiar-link {
+            display: block;
+            margin: 40px auto 20px auto;
+            background-color: #F75D04;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Roboto', sans-serif;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn-copiar-link:hover {
+            background-color: #d64d03;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="cinta-superior">
+        <a href="index.html">
+            <img src="img/Punto 1.png" alt="Punto Estado de México" class="cinta-logo">
+        </a>
+        <a href="index.html" class="boton-volver">⬅ Volver atrás</a>
+    </header>
+
+    <div class="contenedor-noticia">
+        <div id="noticia-completa">
+            <h3 style="text-align: center; color: #555; margin-top: 50px;">
+                Cargando la noticia...
+            </h3>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const contenedor = document.getElementById('noticia-completa');
+            
+            try {
+                const supabaseUrl = 'https://yeigwlusrivrdbkjrnpp.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaWd3bHVzcml2cmRia2pybnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyODM3NjQsImV4cCI6MjA5ODg1OTc2NH0.M-e480U5iuyH1FctwZtdiTIKD5HMklxu10LXINx2r6U';
+
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+                const parametrosURL = new URLSearchParams(window.location.search);
+                const noticiaId = parametrosURL.get('id');
+
+                if (!noticiaId) {
+                    contenedor.innerHTML = '<h2 style="color:red; text-align:center;">Error: No se encontró la noticia.</h2>';
+                    return;
+                }
+
+                const { data: noticia, error } = await supabase
+                    .from('noticias') 
+                    .select('*')
+                    .eq('id', noticiaId)
+                    .single();
+
+                if (error) throw error;
+
+                // Armamos el HTML. Nota el "white-space: pre-wrap" en el div del cuerpo
+                contenedor.innerHTML = `
+                    <img src="${noticia.imagen_url}" alt="Imagen de la noticia">
+                    
+                    <h1 style="margin-top: 25px; font-family: 'Oswald', sans-serif; color: #333; font-size: 38px; line-height: 1.2;">
+                        ${noticia.titulo}
+                    </h1>
+
+                    ${noticia.subtitulo ? `<h2 class="subtitulo-estilo">${noticia.subtitulo}</h2>` : ''}
+                    
+                    <div style="margin-top: 25px; font-family: 'Roboto', sans-serif; line-height: 1.8; color: #444; font-size: 19px; white-space: pre-wrap;">${noticia.cuerpo}</div>
+
+                    <button id="btn-copiar" class="btn-copiar-link">🔗 Copiar enlace de la noticia</button>
+                `;
+
+                // Agregamos la funcionalidad al botón de copiar justo después de crearlo
+                const btnCopiar = document.getElementById('btn-copiar');
+                btnCopiar.addEventListener('click', () => {
+                    // Copia la URL que está actualmente en la barra de direcciones
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        // Cambiamos el texto y color del botón para confirmar
+                        btnCopiar.textContent = '✅ ¡Enlace copiado!';
+                        btnCopiar.style.backgroundColor = '#28a745'; // Color verde de éxito
+                        
+                        // Después de 3 segundos, lo regresamos a la normalidad
+                        setTimeout(() => {
+                            btnCopiar.textContent = '🔗 Copiar enlace de la noticia';
+                            btnCopiar.style.backgroundColor = '#F75D04';
+                        }, 3000);
+                    }).catch(err => {
+                        console.error('Error al copiar: ', err);
+                        alert('No se pudo copiar el enlace. Revisa los permisos de tu navegador.');
+                    });
+                });
+
+            } catch (error) {
+                console.error("Fallo:", error);
+                contenedor.innerHTML = '<h2 style="color:red; text-align:center;">Error al cargar la noticia.</h2>';
+            }
+        });
+    </script>
+</body>
+</html>
