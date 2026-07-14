@@ -93,7 +93,7 @@
             font-size: 16px;
             font-weight: bold;
             font-family: 'Roboto', sans-serif;
-            border-radius: 6px;
+            border-radius: 50px;
             cursor: pointer;
             transition: background-color 0.3s;
             text-align: center;
@@ -105,6 +105,14 @@
 
         .btn-accion:hover {
             background-color: #d64d03;
+        }
+
+        .btn-facebook {
+            background-color: #1877F2; /* Azul oficial de Facebook */
+        }
+
+        .btn-facebook:hover {
+            background-color: #166FE5;
         }
         
         /* Ajustes Móviles de la Nota */
@@ -199,10 +207,27 @@
 
                         <div class="contenedor-botones">
                             <button id="btn-copiar" class="btn-accion">Copiar enlace de la noticia</button>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank" class="btn-accion btn-facebook">Compartir en Facebook</a>
+                            
                             <a href="index.html" class="btn-accion">⬅ Volver atrás</a>
                         </div>
                     </div>
                 `;
+
+                // --- NUEVO: Inyectar etiquetas Open Graph para Facebook ---
+                // Esto le dice a Facebook qué título e imagen mostrar cuando se comparta el enlace
+                const inyectarMetaTag = (propiedad, contenido) => {
+                    let meta = document.createElement('meta');
+                    meta.setAttribute('property', propiedad);
+                    meta.setAttribute('content', contenido);
+                    document.head.appendChild(meta);
+                };
+
+                inyectarMetaTag('og:title', noticia.titulo);
+                inyectarMetaTag('og:image', noticia.imagen_url);
+                inyectarMetaTag('og:url', window.location.href);
+                inyectarMetaTag('og:type', 'article');
+                // ---------------------------------------------------------
 
                 // Le damos vida al botón de copiar enlace
                 const btnCopiar = document.getElementById('btn-copiar');
@@ -212,7 +237,7 @@
                         btnCopiar.style.backgroundColor = '#28a745'; 
                         
                         setTimeout(() => {
-                            btnCopiar.textContent = '🔗 Copiar enlace de la noticia';
+                            btnCopiar.textContent = 'Copiar enlace de la noticia';
                             btnCopiar.style.backgroundColor = '#F75D04';
                         }, 3000);
                     }).catch(err => {
