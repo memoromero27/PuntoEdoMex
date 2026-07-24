@@ -159,13 +159,30 @@
             </ul>
         </div>
     </nav>
-    <div class="contenedor-noticia">
-        <div id="noticia-completa">
-            <h3 style="text-align: center; color: #555; padding: 50px 0;">
-                Cargando la noticia...
-            </h3>
+    <main id="main" class="layout-articulo-centrado">
+        
+        <div class="columna-spacer-izq"></div>
+
+        <div class="columna-noticia">
+            <article class="contenedor-noticia">
+                <div id="noticia-completa">
+                    <h3 style="text-align: center; color: #555; padding: 50px 0;">
+                        Cargando la noticia...
+                    </h3>
+                </div>
+            </article>
         </div>
-    </div>
+
+        <aside class="columna-sidebar-der">
+            <div class="widget-publicidad-sticky">
+                <h3 class="widget-title"><span>Publicidad</span></h3>
+                <a href="TU_LINK_EXTERNO_AQUI" target="_blank" rel="noopener noreferrer" style="display: block;">
+                    <img src="img/EP400x400.jpg" alt="Publicidad" style="width: 100%; height: auto; border-radius: 8px; display: block;">
+                </a>
+            </div>
+        </aside>
+
+    </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
