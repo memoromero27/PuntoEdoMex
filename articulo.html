@@ -15,14 +15,54 @@
     <style>
         /* ESTILOS EXCLUSIVOS DE LA NOTICIA (Caja Blanca, Textos, Botones) */
         body {
-            /* Mantenemos un fondo sutil detrás de la nota */
             background-color: #f4f6f8; 
         }
 
-        .contenedor-noticia {
-            max-width: 800px;
+        /* --- LAYOUT 3 COLUMNAS PARA CENTRADO EXACTO Y ANUNCIO STICKY --- */
+        .layout-articulo-centrado {
+            display: grid;
+            grid-template-columns: 1fr minmax(300px, 800px) 1fr;
+            gap: 30px;
+            max-width: 96%;
+            margin: 35px auto 60px auto;
+            padding: 0 15px;
+        }
+
+        /* Columna 1: Espacio invisible de balanceo */
+        .columna-spacer-izq {
             width: 100%;
-            margin: 30px auto 60px auto;
+        }
+
+        /* Columna 2: La noticia centrada */
+        .columna-noticia {
+            width: 100%;
+            min-width: 0;
+        }
+
+        /* Columna 3: El anuncio a la derecha de la nota */
+        .columna-sidebar-der {
+            width: 100%;
+            max-width: 340px;
+            justify-self: start;
+            height: 100%; /* Permite que la columna se extienda a todo lo alto de la nota */
+        }
+
+        /* Recuadro del anuncio flotante (Sticky) */
+        .widget-publicidad-sticky {
+            position: sticky;
+            top: 110px; /* Se fija a 110px del techo al hacer scroll */
+            z-index: 10;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        /* --- ESTILOS INTERNOS DE LA NOTICIA --- */
+        .contenedor-noticia {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 0 60px 0;
             background: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -73,7 +113,7 @@
             line-height: 1.8;
             color: #333;
             font-size: 19px;
-            white-space: pre-wrap; /* Mantiene los "Enters" intactos */
+            white-space: pre-wrap; 
         }
 
         .contenedor-botones {
@@ -108,19 +148,40 @@
         }
 
         .btn-facebook {
-            background-color: #1877F2; /* Azul oficial de Facebook */
+            background-color: #1877F2; 
         }
 
         .btn-facebook:hover {
             background-color: #166FE5;
         }
         
-        /* Ajustes Móviles de la Nota */
+        /* --- ADAPTACIÓN PARA CELULARES Y TABLETS --- */
+        @media (max-width: 992px) {
+            .layout-articulo-centrado {
+                display: flex;
+                flex-direction: column;
+                max-width: 100%;
+                gap: 25px;
+                margin-top: 20px;
+            }
+            .columna-spacer-izq {
+                display: none;
+            }
+            .columna-sidebar-der {
+                max-width: 100%;
+                width: 100%;
+                height: auto;
+            }
+            .widget-publicidad-sticky {
+                position: static;
+            }
+        }
+
         @media (max-width: 768px) {
             .titulo-noticia { font-size: 30px; }
             .subtitulo-noticia { font-size: 19px; }
             .contenido-texto { padding: 25px 20px; }
-            .contenedor-noticia { margin: 20px auto; border-radius: 0;}
+            .contenedor-noticia { margin: 0 0 20px 0; border-radius: 0;}
         }
     </style>
 </head>
@@ -140,25 +201,11 @@
         <div class="container">
             <div class="menu-toggle" id="mobile-menu-btn">☰ Menú</div>
             <ul class="nav-menu" id="primary-menu">
-                <li><a href="index.html">Inicio</a></li>
-                <li><a href="index.html">Política</a></li>
-                <li><a href="index.html">Cultura</a></li>
-                
-                <li class="has-submenu">
-                    <a href="index.html">EdoMex ▾</a>
-                    <ul class="submenu">
-                        <li><a href="index.html">Universidad</a></li>
-                        <li><a href="index.html">Aula</a></li>
-                        <li><a href="index.html">Municipios</a></li>
-                    </ul>
-                </li>
-                
-                <li><a href="index.html">Nacional</a></li>
-                <li><a href="index.html">Internacional</a></li>
-                <li><a href="index.html">Hoy</a></li>
+                <li class=""><a href="index.html">Inicio</a></li>
             </ul>
         </div>
     </nav>
+    
     <main id="main" class="layout-articulo-centrado">
         
         <div class="columna-spacer-izq"></div>
@@ -183,13 +230,13 @@
         </aside>
 
     </main>
+    
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const contenedor = document.getElementById('noticia-completa');
             
             try {
-                // Llaves de tu base de datos Supabase
                 const supabaseUrl = 'https://yeigwlusrivrdbkjrnpp.supabase.co';
                 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaWd3bHVzcml2cmRia2pybnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyODM3NjQsImV4cCI6MjA5ODg1OTc2NH0.M-e480U5iuyH1FctwZtdiTIKD5HMklxu10LXINx2r6U';
                 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -210,7 +257,6 @@
 
                 if (error) throw error;
 
-                // Armamos el HTML de la nota
                 contenedor.innerHTML = `
                     <img src="${noticia.imagen_url}" alt="Imagen de la noticia" class="portada-noticia">
                     
@@ -231,8 +277,6 @@
                     </div>
                 `;
 
-                // --- NUEVO: Inyectar etiquetas Open Graph para Facebook ---
-                // Esto le dice a Facebook qué título e imagen mostrar cuando se comparta el enlace
                 const inyectarMetaTag = (propiedad, contenido) => {
                     let meta = document.createElement('meta');
                     meta.setAttribute('property', propiedad);
@@ -244,9 +288,7 @@
                 inyectarMetaTag('og:image', noticia.imagen_url);
                 inyectarMetaTag('og:url', window.location.href);
                 inyectarMetaTag('og:type', 'article');
-                // ---------------------------------------------------------
 
-                // Le damos vida al botón de copiar enlace
                 const btnCopiar = document.getElementById('btn-copiar');
                 btnCopiar.addEventListener('click', () => {
                     navigator.clipboard.writeText(window.location.href).then(() => {
