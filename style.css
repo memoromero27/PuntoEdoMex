@@ -269,12 +269,39 @@ a:hover {
     flex-shrink: 0;
 }
 
+/* --- AJUSTES PARA "LO MÁS LEÍDO" CON DISTANCIA SIMÉTRICA --- */
+.widget-info {
+    flex: 1;
+    min-width: 0; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centra el bloque completo con respecto a la imagen */
+}
+
 .widget-info a {
     font-weight: 500;
     font-size: 14px;
     line-height: 1.3;
-    display: block;
     margin-bottom: 5px;
+    
+    /* Nueva regla: Fuerza al contenedor a medir lo de 3 líneas siempre */
+    /* 14px de fuente * 1.3 de line-height = 18.2px por línea. Multiplicado por 3 = ~55px */
+    min-height: 55px; 
+    display: block; /* Cambiado para asegurar que respete la altura mínima */
+
+    /* La magia para cortar a máximo 3 líneas */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+.widget-info .posted-on {
+    font-size: 12px;
+    color: #888;
+    display: block; /* Asegura que la fecha empiece justo abajo del bloque invisible */
 }
 
 /* Featured Section */
