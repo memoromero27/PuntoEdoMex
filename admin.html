@@ -259,7 +259,7 @@
             const tituloFinal = parrafos[0];
             
             let autorFinal = null;
-            let subtituloFinal = null;
+            let subtitulosArray = []; // <-- CAMBIO: Ahora es un array para guardar múltiples
             let cuerpoArray = [];
 
             // Empezamos a revisar a partir del SEGUNDO párrafo (índice 1)
@@ -269,21 +269,24 @@
 
                 // Detectar si es el AUTOR
                 if (pLower.startsWith('por:') || pLower.startsWith('por :')) {
-                    autorFinal = p; // Guardamos el autor tal cual lo escribió
+                    autorFinal = p; 
                 } 
                 // Detectar si es el SUBTÍTULO
                 else if (p.startsWith('**')) {
-                    // Guardamos el subtítulo, pero le quitamos los "**" para que quede limpio en base de datos
-                    subtituloFinal = p.substring(2).trim(); 
+                    // <-- CAMBIO: Lo agregamos al array sin los "**"
+                    subtitulosArray.push(p.substring(2).trim()); 
                 } 
-                // Si no es ninguno de los dos, entonces es texto de la noticia normal
+                // Si no es ninguno, es texto de la noticia normal
                 else {
                     cuerpoArray.push(p);
                 }
             }
 
             // Volvemos a unir todos los párrafos de la noticia respetando sus saltos de línea
-            const cuerpoFinal = cuerpoArray.join('\n\n');
+            const cuerpoFinal = cuerpoArray.join('<br><br>');
+            
+            // <-- CAMBIO: Unimos todos los subtítulos encontrados. Si no hay ninguno, lo dejamos como null
+            const subtituloFinal = subtitulosArray.length > 0 ? subtitulosArray.join('<br><br>') : null;
 
             // ====================================================
 
@@ -309,7 +312,7 @@
                         {
                             titulo: tituloFinal,
                             subtitulo: subtituloFinal,
-                            autor: autorFinal, // NUEVA COLUMNA
+                            autor: autorFinal,
                             categoria: category,
                             cuerpo: cuerpoFinal,
                             imagen_url: publicUrl 
