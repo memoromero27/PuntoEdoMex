@@ -115,53 +115,55 @@ async function cargarDestacadas() {
             }
         };
 
-        // --- SECCIÓN 1: ARRIBA (Política, Edomex, Municipios SIN REPETIR) ---
-        // Creamos un registro para no mostrar la misma noticia dos veces
+        // --- SECCIÓN 1: ARRIBA (Las 3 noticias más recientes en general) ---
         const idsUsados = new Set(); 
 
-        const notaPolitica = noticias.find(n => 
-            n.categoria && (n.categoria.toLowerCase().includes('polít') || n.categoria.toLowerCase().includes('polit'))
-        );
-        if (notaPolitica) idsUsados.add(notaPolitica.id); // Guardamos su ID
+        // Tomamos las 3 noticias más nuevas de toda la base de datos
+        const notaPrincipal = noticias[0];
+        const notaSecundaria1 = noticias[1];
+        const notaSecundaria2 = noticias[2];
 
-        const notaEdomex = noticias.find(n => 
-            n.categoria && n.categoria.toLowerCase().includes('edomex') && !idsUsados.has(n.id)
-        );
-        if (notaEdomex) idsUsados.add(notaEdomex.id); // Guardamos su ID
-
-        const notaMunicipios = noticias.find(n => 
-            n.categoria && n.categoria.toLowerCase().includes('municipios') && !idsUsados.has(n.id)
-        );
-        if (notaMunicipios) idsUsados.add(notaMunicipios.id); // Guardamos su ID
+        // Guardamos sus IDs para asegurarnos de que no se repitan en las secciones de abajo
+        if (notaPrincipal) idsUsados.add(notaPrincipal.id);
+        if (notaSecundaria1) idsUsados.add(notaSecundaria1.id);
+        if (notaSecundaria2) idsUsados.add(notaSecundaria2.id);
 
         // Pintamos las tarjetas
-        actualizarTarjeta(notaPolitica, document.querySelector('.main-feature'));
+        actualizarTarjeta(notaPrincipal, document.querySelector('.main-feature'));
         const cajasSecundarias = document.querySelectorAll('.secondary-features .small-feature');
         if (cajasSecundarias.length >= 2) {
-            actualizarTarjeta(notaEdomex, cajasSecundarias[0]);
-            actualizarTarjeta(notaMunicipios, cajasSecundarias[1]);
+            actualizarTarjeta(notaSecundaria1, cajasSecundarias[0]);
+            actualizarTarjeta(notaSecundaria2, cajasSecundarias[1]);
         }
 
         // --- SECCIÓN 2: CULTURA ---
-        const notasCultura = noticias.filter(n => n.categoria.toLowerCase().includes('cultura')).slice(0, 3);
+        // Buscamos las de cultura, pero filtramos para saltarnos las que ya pusimos arriba
+        const notasCultura = noticias.filter(n => 
+            n.categoria && n.categoria.toLowerCase().includes('cultura') && !idsUsados.has(n.id)
+        ).slice(0, 3);
+        
         actualizarTarjeta(notasCultura[0], document.getElementById('cultura-1'));
         actualizarTarjeta(notasCultura[1], document.getElementById('cultura-2'));
         actualizarTarjeta(notasCultura[2], document.getElementById('cultura-3'));
+
+        // Guardamos también las que pusimos en Cultura para no repetirlas abajo
+        notasCultura.forEach(n => { if (n) idsUsados.add(n.id) });
 
         // --- SECCIÓN 3: MÁS NOTICIAS ---
         const fechaAyer = new Date();
         fechaAyer.setDate(fechaAyer.getDate() - 1); 
         
         let notasMasNoticias = noticias.filter(n => {
-            if (!n.created_at) return false;
+            if (!n.created_at || idsUsados.has(n.id)) return false; // Evita repetir las de arriba y cultura
             const f = new Date(n.created_at);
             return f.getDate() === fechaAyer.getDate() && 
                    f.getMonth() === fechaAyer.getMonth() && 
                    f.getFullYear() === fechaAyer.getFullYear();
         });
 
+        // Si no hay 2 noticias de ayer, tomamos las más recientes que no se hayan usado aún
         if (notasMasNoticias.length < 2) {
-            notasMasNoticias = noticias.slice(0, 2); 
+            notasMasNoticias = noticias.filter(n => !idsUsados.has(n.id)).slice(0, 2); 
         }
 
         actualizarTarjeta(notasMasNoticias[0], document.getElementById('ayer-1'));
